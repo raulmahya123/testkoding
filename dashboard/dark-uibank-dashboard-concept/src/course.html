@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Management</title>
+    <style>
+        /* CSS untuk styling tabel */
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .course-table th, .course-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .course-table th {
+            background-color: #f2f2f2;
+        }
+        .button {
+    background-color: #4CAF50; /* Warna latar belakang */
+    border: none;
+    color: white;
+    padding: 15px 32px; /* Ukuran padding */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px; /* Rounding sudut */
+}
+
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-200">
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-2 gap-8">
+            <div class="max-w-md bg-white p-8 rounded-md shadow-md">
+                <h2 class="text-xl font-bold mb-4">Create Course</h2>
+                <form id="course-form" class="space-y-4">
+                    <div>
+                        <label for="title" class="block font-medium">Title</label>
+                        <input type="text" id="title" name="title" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="slug" class="block font-medium">Slug</label>
+                        <input type="text" id="slug" name="slug" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="description" class="block font-medium">Description</label>
+                        <textarea id="description" name="description" class="form-input" required></textarea>
+                    </div>
+                    <div>
+                        <label for="privacy" class="block font-medium">Privacy</label>
+                        <input type="text" id="privacy" name="privacy" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="start_at" class="block font-medium">Start Date</label>
+                        <input type="date" id="start_at" name="start_at" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="end_at" class="block font-medium">End Date</label>
+                        <input type="date" id="end_at" name="end_at" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="image" class="block font-medium">Image</label>
+                        <input type="text" id="image" name="image" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="certificate" class="flex items-center">
+                            <input type="checkbox" id="certificate" name="certificate" class="form-checkbox">
+                            <span class="ml-2">Certificate</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="level" class="block font-medium">Level</label>
+                        <input type="text" id="level" name="level" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="price" class="block font-medium">Price</label>
+                        <input type="number" id="price" name="price" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="status_enum" class="block font-medium">Status Enum</label>
+                        <input type="text" id="status_enum" name="status_enum" class="form-input" required>
+                    </div>
+                    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition">Create Course</button>
+                </form>
+                <button onclick="window.location.href='../src/courseget.html';" class="button">
+                    <span>GET ALL</span>
+                    <span class="icon-button">
+                        <i class="ph-caret-right-bold"></i>
+                    </span>
+                </button>
+                
+            </div>
+            
+    
+    
+    
+    <script src="script.js"></script>
+    
+    
+</body>
+</html>
