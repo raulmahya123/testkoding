@@ -1,70 +1,75 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
-// Definisikan struktur IComment
-type IComment struct {
-	CommentId      int
-	CommentContent string
-	Replies        []IComment
-}
-
-// Fungsi untuk menghitung total komentar dan semua balasannya
-func CountTotalComments(comments []IComment) int {
-	totalComments := 0
-
-	// Iterasi melalui setiap komentar
-	for _, comment := range comments {
-		// Tambahkan 1 untuk setiap komentar
-		totalComments++
-
-		// Jika komentar memiliki balasan, rekursif hitung total komentar di balasan tersebut
-		totalComments += CountTotalComments(comment.Replies)
-	}
-
-	return totalComments
+type Comment struct {
+	CommentId      int        `json:"commentId"`
+	CommentContent string     `json:"commentContent"`
+	Replies        []*Comment `json:"replies"`
 }
 
 func main() {
-	// Deklarasi data komentar
-	comments := []IComment{
+	// Data JSON yang diberikan
+	jsonData := `[ 
 		{
-			CommentId:      1,
-			CommentContent: "Hai",
-			Replies: []IComment{
+			"commentId": 1,
+			"commentContent": "Hai",
+			"replies": [
 				{
-					CommentId:      11,
-					CommentContent: "Hai juga",
-					Replies: []IComment{
+					"commentId": 11,
+					"commentContent": "Hai juga",
+					"replies": [
 						{
-							CommentId:      111,
-							CommentContent: "Haai juga hai jugaa",
+							"commentId": 111,
+							"commentContent": "Haai juga hai jugaa"
 						},
 						{
-							CommentId:      112,
-							CommentContent: "Haai juga hai jugaa",
-						},
-					},
+							"commentId": 112,
+							"commentContent": "Haai juga hai jugaa"
+						}
+					]
 				},
 				{
-					CommentId:      12,
-					CommentContent: "Hai juga",
-					Replies: []IComment{
+					"commentId": 12,
+					"commentContent": "Hai juga",
+					"replies": [
 						{
-							CommentId:      121,
-							CommentContent: "Haai juga hai jugaa",
-						},
-					},
-				},
-			},
+							"commentId": 121,
+							"commentContent": "Haai juga hai jugaa"
+						}
+					]
+				}
+			]
 		},
 		{
-			CommentId:      2,
-			CommentContent: "Halooo",
-		},
+			"commentId": 2,
+			"commentContent": "Halooo"
+		}
+	]`
+
+	// Parsing JSON ke dalam slice dari struct Comment
+	var comments []*Comment
+	err := json.Unmarshal([]byte(jsonData), &comments)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return
 	}
 
-	// Hitung total komentar dan cetak hasilnya
-	totalComments := CountTotalComments(comments)
-	fmt.Printf("Total komentar adalah %d komentar.\n", totalComments)
+	// Hitung total komentar termasuk balasannya
+	totalComments := countComments(comments)
+	fmt.Println("Total komentar:", totalComments)
+}
+
+// Fungsi rekursif untuk menghitung total komentar termasuk balasannya
+func countComments(comments []*Comment) int {
+	count := len(comments)
+
+	for _, comment := range comments {
+		count += countComments(comment.Replies)
+	}
+
+	return count
 }
