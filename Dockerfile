@@ -1,44 +1,15 @@
-# Use the official Golang image as the base image
-FROM golang:1.19
+#build stage
+FROM golang:alpine AS builder
+RUN apk add --no-cache git
+WORKDIR /go/src/app
+COPY . .
+RUN go get -d -v ./...
+RUN go build -o /go/bin/app -v ./...
 
-# Set the working directory inside the container
-WORKDIR /app
-
-# Copy the go.mod file to the working directory
-COPY go.mod .
-
-# Copy the main.go file to the working directory
-COPY main.go .
-
-# Copy the .env file to the working directory
-COPY .env .
-
-# Copy the entire golangsidang directory to the working directory
-COPY golangsidang/ ./golangsidang/
-
-# Download dependencies defined in go.mod
-RUN go mod download github.com/andybalholm/brotli
-
-# Perform any additional tidy up of dependencies
-RUN go mod tidy
-
-# Set environment variables for database connection
-ENV DB_HOST=host.docker.internal \
-    DB_PORT=5432 \
-    DB_USER=postgres \
-    DB_PASSWORD=raulmahya123 \
-    DB_NAME=postgres \
-    DB_SSL=disable \
-    JWT_SECRET=your_dynamic_secret_key
-
-# Build the Go application and output the binary to the bin directory
-RUN go build -o bin/myapp .
-
-# Expose port 3000 to the outside world
+#final stage
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+COPY --from=builder /go/bin/app /app
+ENTRYPOINT /app
+LABEL Name=testkoding Version=0.0.1
 EXPOSE 3000
-
-# Set the entry point for the container to run the compiled binary
-ENTRYPOINT [ "/app/bin/myapp" ]
-
-# Set the default command for the container to run the API server
-CMD ["./main"]
