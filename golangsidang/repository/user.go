@@ -12,6 +12,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
@@ -31,83 +32,84 @@ func init() {
 		log.Fatal("Error loading .env file: ", err)
 	}
 }
-
 func (r *Repositorry) CreateUser(c *fiber.Ctx) error {
-	userRequest := new(models.User)
-	if err := c.BodyParser(userRequest); err != nil {
-		c.Status(fiber.StatusUnprocessableEntity).JSON(
-			&fiber.Map{
-				"status":  "error",
-				"message": "Invalid JSON",
-			})
+	// Get form values
+	username := c.FormValue("username")
+	password := c.FormValue("password")
+	email := c.FormValue("email")
+	role := c.FormValue("role")
+
+	// Image upload form
+	file, err := c.FormFile("image")
+	if err != nil {
+		c.Status(fiber.StatusBadRequest).JSON(&fiber.Map{
+			"message": "Error uploading image",
+		})
 		return err
 	}
+	log.Println(file.Filename)
 
 	// Hash the user's password before saving it to the database
-	hashedPassword, err := utils.HashPassword(userRequest.Password)
+	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
-		c.Status(fiber.StatusInternalServerError).JSON(
-			&fiber.Map{"message": "Error hashing password"})
+		c.Status(fiber.StatusInternalServerError).JSON(&fiber.Map{
+			"message": "Error hashing password",
+		})
 		return err
 	}
 
-	var users models.User
-	r.DB.Where("username = ?", userRequest.Username).First(&users)
-	if users.Username != "" {
-		c.Status(fiber.StatusBadRequest).JSON(
-			&fiber.Map{
-				"status":  "error",
-				"message": "Username already exists",
-			})
+	// Check if the username already exists
+	var existingUser models.User
+	if err := r.DB.Where("username = ?", username).First(&existingUser).Error; err == nil {
+		c.Status(fiber.StatusBadRequest).JSON(&fiber.Map{
+			"status":  "error",
+			"message": "Username already exists",
+		})
 		return nil
 	}
 
-	r.DB.Where("email = ?", userRequest.Email).First(&users)
-	if users.Email != "" {
-		c.Status(fiber.StatusBadRequest).JSON(
-			&fiber.Map{
-				"status":  "error",
-				"message": "Email already exists",
-			})
+	// Check if the email already exists
+	if err := r.DB.Where("email = ?", email).First(&existingUser).Error; err == nil {
+		c.Status(fiber.StatusBadRequest).JSON(&fiber.Map{
+			"status":  "error",
+			"message": "Email already exists",
+		})
 		return nil
-	}
-
-	// Set the role to "user" by default
-	role := "user"
-
-	// Check if the provided role is either "admin" or "super admin"
-	if userRequest.Role == "admin" || userRequest.Role == "super admin" {
-		role = userRequest.Role
 	}
 
 	// Append "@gmail.com" if the email doesn't have it
-	if !endsWithGmail(userRequest.Email) {
-		userRequest.Email += "@gmail.com"
+	if !endsWithGmail(email) {
+		email += "@gmail.com"
 	}
 
+	// Generate a unique filename for the image
+	imageName := uuid.New().String() + filepath.Ext(file.Filename)
+	// Save the image file to the specified directory
+	// Create the user object
 	user := models.User{
-		Username:  userRequest.Username,
+		Username:  username,
 		Password:  hashedPassword,
-		Email:     userRequest.Email,
-		Image:     userRequest.Image,
+		Email:     email,
+		Image:     imageName, // Save the image path to the database
 		Create_at: time.Now().Format(time.RFC3339),
-		Create_by: userRequest.Username,
+		Create_by: username,
 		Role:      role,
 		Delete_at: false,
 	}
-
-	err = r.DB.Create(&user).Error
-	if err != nil {
-		c.Status(fiber.StatusInternalServerError).JSON(
-			&fiber.Map{"message": "Error creating user"})
+	log.Println(user)
+	// Save the user to the database
+	if err := r.DB.Create(&user).Error; err != nil {
+		c.Status(fiber.StatusInternalServerError).JSON(&fiber.Map{
+			"message": "Error creating user",
+		})
 		return err
 	}
 
-	c.Status(fiber.StatusCreated).JSON(
-		&fiber.Map{
-			"status": "success",
-			"data":   user,
-		})
+	// Return success response
+	c.Status(fiber.StatusCreated).JSON(&fiber.Map{
+		"status": "success",
+		"data":   user,
+	})
 	return nil
 }
 
