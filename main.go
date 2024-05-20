@@ -68,6 +68,7 @@ func main() {
 	routes.ProgramRoutes(app, &repo3)
 	routes.SalonRoutes(app, &salon)
 	routes.CartRoutes(app, &cart)
+	routes.SetupPayment(app)
 
 	// Create a repository instance using NewRepository
 	repo := repository.NewRepository(db)
